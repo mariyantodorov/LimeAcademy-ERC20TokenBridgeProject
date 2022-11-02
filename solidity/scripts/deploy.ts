@@ -9,8 +9,8 @@ async function main() {
   //   balance: (await deployer.getBalance()).toString(),
   // });
 
-  const Bridge = await ethers.getContractFactory("Bridge");
-  const bridge = await Bridge.deploy();
+  const BridgeFactory = await ethers.getContractFactory("BridgeFactory");
+  const bridge = await BridgeFactory.deploy();
 
   await bridge.deployed();
 

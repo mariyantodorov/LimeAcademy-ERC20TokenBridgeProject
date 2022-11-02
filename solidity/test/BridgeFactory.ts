@@ -3,7 +3,7 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Bridge", function () {
+describe("BridgeFactory", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
@@ -11,7 +11,7 @@ describe("Bridge", function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
 
-    const Bridge = await ethers.getContractFactory("Bridge");
+    const Bridge = await ethers.getContractFactory("BridgeFactory");
     const bridge = await Bridge.deploy();
 
     return { owner, otherAccount, bridge };
