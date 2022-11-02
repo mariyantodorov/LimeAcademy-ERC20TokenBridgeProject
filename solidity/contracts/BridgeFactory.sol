@@ -7,7 +7,8 @@ import "./WERC20.sol";
 
 contract BridgeFactory {
     address public admin;
-    mapping(address => WERC20) private _tokens;
+    mapping(address => WERC20) public tokens;
+    mapping(bytes32 => bool) private existingTokens;
 
     enum Step {
         Lock,
@@ -22,16 +23,25 @@ contract BridgeFactory {
     }
 
     function lock(address to, uint amount) external {
-        if (_tokens[to].admin() != address(0)) {
-            _tokens[to].lock(to, amount);
-        } else {
-            //deploy token
-        }
-
+        //check if exists
+        tokens[to].lock(to, amount);
         emit Transfer(msg.sender, to, amount, Step.Lock);
     }
 
-    function unlock(address to, uint amount) external {
-        emit Transfer(msg.sender, to, amount, Step.Unlock);
+    function unlock(address account, uint amount) external {
+        tokens[account].unlock(account, amount);
+        emit Transfer(msg.sender, account, amount, Step.Unlock);
+    }
+
+    function createToken(string memory name, string memory symbol) external {
+        require(
+            existingTokens[keccak256(abi.encodePacked(name))] == false,
+            "Token already exists"
+        );
+
+        //how to get the address of the new contract ???
+        WERC20 newToken = new WERC20(name, symbol);
+        tokens[msg.sender] = newToken;
+        existingTokens[keccak256(abi.encodePacked(name))] = true;
     }
 }

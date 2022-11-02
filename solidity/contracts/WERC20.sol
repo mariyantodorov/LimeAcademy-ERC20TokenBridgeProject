@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-contract WERC20 {
+import "@openzeppelin/contracts/token/ERC20";
+
+//TODO: replace admin/only admin with Ownable
+
+//ERC20 or IERC20 ??
+contract WERC20 is IERC20 {
     mapping(address => uint256) private _balances;
 
     uint public totalLockedValue;
@@ -46,7 +51,7 @@ contract WERC20 {
         require(balance >= amount, "Exceeds balance");
         _balances[account] = balance - amount; //use unchecked?
         totalLockedValue -= amount;
-    }
 
-    //emit event
+        //emit event
+    }
 }
