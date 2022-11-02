@@ -11,8 +11,8 @@ describe("BridgeFactory", function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
 
-    const Bridge = await ethers.getContractFactory("BridgeFactory");
-    const bridge = await Bridge.deploy();
+    const BridgeFactory = await ethers.getContractFactory("BridgeFactory");
+    const bridge = await BridgeFactory.deploy();
 
     return { owner, otherAccount, bridge };
   }
@@ -21,7 +21,7 @@ describe("BridgeFactory", function () {
     it("Should set the right owner", async function () {
       const { bridge, owner } = await loadFixture(deployBridgeFixture);
 
-      expect(await bridge.owner()).to.equal(owner.address);
+      expect(await bridge.admin()).to.equal(owner.address);
     });
   });
 

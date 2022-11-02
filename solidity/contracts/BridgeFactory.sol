@@ -9,12 +9,10 @@ contract BridgeFactory {
     address public admin;
     mapping(address => WERC20) public tokens;
     mapping(bytes32 => bool) private existingTokens;
-
     enum Step {
         Lock,
         Unlock
     }
-
     //add chain id?
     event Transfer(address from, address to, uint amount, Step indexed step);
 
@@ -38,7 +36,6 @@ contract BridgeFactory {
             existingTokens[keccak256(abi.encodePacked(name))] == false,
             "Token already exists"
         );
-
         //how to get the address of the new contract ???
         WERC20 newToken = new WERC20(name, symbol);
         tokens[msg.sender] = newToken;

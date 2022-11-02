@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/token/ERC20";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 //TODO: replace admin/only admin with Ownable
 
 //ERC20 or IERC20 ??
-contract WERC20 is IERC20 {
+contract WERC20 {
     mapping(address => uint256) private _balances;
-
     uint public totalLockedValue;
     string public name;
     string public symbol;
-
     address public admin;
 
     constructor(string memory _name, string memory _symbol) {
@@ -25,7 +23,6 @@ contract WERC20 is IERC20 {
         require(msg.sender == admin, "only admin");
         _;
     }
-
     modifier onlyNonZeroAddress(address to) {
         require(to != address(0), "Operation to zero address");
         _;
@@ -38,7 +35,6 @@ contract WERC20 is IERC20 {
     {
         totalLockedValue += amount;
         _balances[to] += amount; //use unchecked?
-
         //emit event
     }
 
@@ -51,7 +47,6 @@ contract WERC20 is IERC20 {
         require(balance >= amount, "Exceeds balance");
         _balances[account] = balance - amount; //use unchecked?
         totalLockedValue -= amount;
-
         //emit event
     }
 }
