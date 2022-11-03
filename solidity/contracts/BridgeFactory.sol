@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// Uncomment this line to use console.log
-// import "hardhat/console.sol";
 import "./WERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract BridgeFactory {
-    address public admin;
-    mapping(address => WERC20) public tokens;
-    mapping(bytes32 => bool) private existingTokens;
+contract BridgeFactory is Ownable {
+    mapping(address => WERC20) private tokens;
+
     enum Step {
         Lock,
         Unlock
@@ -16,29 +15,30 @@ contract BridgeFactory {
     //add chain id?
     event Transfer(address from, address to, uint amount, Step indexed step);
 
-    constructor() {
-        admin = msg.sender;
+    constructor() {}
+
+    function lock(address token, uint amount) external {
+        require(_amount > 0, "amount < 1");
+        ERC20(token).transferFrom(msg.sender, address(this), amount);
+        emit Transfer(msg.sender, token, amount, Step.Lock);
     }
 
-    function lock(address to, uint amount) external {
-        //check if exists
-        tokens[to].lock(to, amount);
-        emit Transfer(msg.sender, to, amount, Step.Lock);
-    }
-
-    function unlock(address account, uint amount) external {
-        tokens[account].unlock(account, amount);
+    function unlock(
+        address token,
+        address receiver,
+        uint amount
+    ) external {
+        ERC20(token).transfer(msg.sender, amount);
         emit Transfer(msg.sender, account, amount, Step.Unlock);
     }
 
-    function createToken(string memory name, string memory symbol) external {
-        require(
-            existingTokens[keccak256(abi.encodePacked(name))] == false,
-            "Token already exists"
-        );
-        //how to get the address of the new contract ???
-        WERC20 newToken = new WERC20(name, symbol);
-        tokens[msg.sender] = newToken;
-        existingTokens[keccak256(abi.encodePacked(name))] = true;
+    //TODO: extract in another contract
+    function createToken(string calldata name, string calldata symbol)
+        external
+    {
+        //check if exists needed??
+        WERC20 wrappedToken = new WERC20(name, symbol);
+        tokens[address(wrappedToken)] = wrappedToken;
+        //emit event
     }
 }
