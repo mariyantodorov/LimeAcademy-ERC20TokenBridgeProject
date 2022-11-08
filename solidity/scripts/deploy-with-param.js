@@ -12,7 +12,7 @@ async function deployBridgeContract(_privateKey) {
 
   await bridge.deployed();
 
-  await run("print", { message: `Done! Bridge deployed to ${bridge.address}` });
+  console.log(`Done! Bridge deployed to ${bridge.address}`);
 
   if(hre.network.name !== 'localhost' && hre.network.name !== 'hardhat') {
     await hre.run("verify:verify", {

@@ -4,7 +4,6 @@ import "@nomiclabs/hardhat-etherscan";
 import dotenv from "dotenv";
 import "./tasks/deploy-testnets";
 import "./tasks/deploy-mainnet";
-import "./tasks/print.subtask";
 import "./tasks/printInfo.subtask";
 
 dotenv.config();

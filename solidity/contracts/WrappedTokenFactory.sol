@@ -5,10 +5,10 @@ import "./ERC20Token.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 //Registry to keep track of eixsting and created tokens???
-contract WERC20Factory is Ownable {
-    mapping(address => ERC20Token) private wrappedTokens;
+contract WrappedTokenFactory is Ownable {
+    mapping(address => ERC20Token) private _wrappedTokenContracts;
 
-    event TokenCreated(name, symbol, address); //indexed?
+    event TokenCreated(string name, string symbol, address tokenAddress); //indexed?
 
     function createToken(string calldata name, string calldata symbol)
         external
@@ -16,11 +16,11 @@ contract WERC20Factory is Ownable {
     {
         //check if exists needed??
         ERC20Token wrappedToken = new ERC20Token(name, symbol);
-        wrappedTokens[address(wrappedToken)] = wrappedToken;
+        _wrappedTokenContracts[address(wrappedToken)] = wrappedToken;
         emit TokenCreated(name, symbol, address(wrappedToken));
     }
 
     function getToken(address token) public view returns (ERC20Token) {
-        return wrappedToken[token];
+        return _wrappedTokenContracts[token];
     }
 }

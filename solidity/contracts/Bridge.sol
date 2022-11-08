@@ -2,22 +2,22 @@
 pragma solidity 0.8.17;
 
 import "./ERC20Token.sol";
-import "./WERC20Factory.sol";
+import "./WrappedTokenFactory.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Bridge is Ownable {
-    WERC20Factory public wERC20Factory;
+    WrappedTokenFactory public wrappedTokenFactory;
 
     enum Step {
         Lock,
-        Unlock
+        Release
     }
     //add chain id?
     event Transfer(address from, address to, uint amount, Step indexed step);
 
-    constructor(address _wERC20Factory) {
-        wERC20Factory = _wERC20Factory;
+    constructor(address _wrappedTokenFactory) {
+        wrappedTokenFactory = WrappedTokenFactory(_wrappedTokenFactory);
     }
 
     function lock(
@@ -59,20 +59,24 @@ contract Bridge is Ownable {
         emit Transfer(msg.sender, token, amount, Step.Lock);
     }
 
-    function unlock(
+    function release(
         address token,
-        address receiver,
+        //address receiver,
         uint amount
     ) external {
         //check allowance?
+        //transfer to receiver?
         ERC20Token(token).transfer(msg.sender, amount);
-        emit Transfer(msg.sender, token, amount, Step.Unlock);
+
+        emit Transfer(msg.sender, token, amount, Step.Release);
     }
+
+    //mint and burn transactions
 
     //when are we using this function and who should be able to call it?
     function createToken(string calldata name, string calldata symbol)
         external
     {
-        wERC20Factory.createToken(name, symbol);
+        wrappedTokenFactory.createToken(name, symbol);
     }
 }

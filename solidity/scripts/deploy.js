@@ -11,8 +11,8 @@ async function deployBridgeContract() {
     const bridge = await BridgeFactory.deploy();
   
     await bridge.deployed();
-  
-    await hre.run("print", { message: `Done! Bridge deployed to ${bridge.address}` });
+
+    console.log(`Done! Bridge deployed to ${bridge.address}`);
 
     if(hre.network.name !== 'localhost' && hre.network.name !== 'hardhat') {
         await hre.run("verify:verify", {
