@@ -1,12 +1,13 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.17;
 
-import "./WERC20.sol";
+import "./ERC20Token.sol";
+import "./WERC20Factory.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Bridge is Ownable {
-    mapping(address => WERC20) private tokens;
+    WERC20Factory public wERC20Factory;
 
     enum Step {
         Lock,
@@ -15,7 +16,9 @@ contract Bridge is Ownable {
     //add chain id?
     event Transfer(address from, address to, uint amount, Step indexed step);
 
-    constructor() {}
+    constructor(address _wERC20Factory) {
+        wERC20Factory = _wERC20Factory;
+    }
 
     function lock(
         //uint256 targetChainId,
@@ -24,12 +27,11 @@ contract Bridge is Ownable {
     ) external {
         require(amount > 0, "lock amount < 1");
 
-        ERC20(token).transferFrom(msg.sender, address(this), amount);
+        ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
         emit Transfer(msg.sender, token, amount, Step.Lock);
     }
 
-    //TODO: Change to lock with permits
     //the front end will hash the message and split it
     function lockWithPermit(
         //uint256 targetChainId,
@@ -41,12 +43,8 @@ contract Bridge is Ownable {
         bytes32 s
     ) public payable {
         require(amount > 0, "lock amount < 1");
-        // require(
-        //     recoverSigner(hashedMessage, v, r, s) == receiver,
-        //     "Receiver does not signed the message"
-        // );
 
-        ERC20(token).permit(
+        ERC20Token(token).permit(
             msg.sender,
             address(this),
             amount,
@@ -56,7 +54,7 @@ contract Bridge is Ownable {
             s
         );
 
-        ERC20(token).transferFrom(msg.sender, address(this), amount);
+        ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
         emit Transfer(msg.sender, token, amount, Step.Lock);
     }
@@ -67,32 +65,14 @@ contract Bridge is Ownable {
         uint amount
     ) external {
         //check allowance?
-        ERC20(token).transfer(msg.sender, amount);
+        ERC20Token(token).transfer(msg.sender, amount);
         emit Transfer(msg.sender, token, amount, Step.Unlock);
     }
 
-    //TODO: extract in another contract
+    //when are we using this function and who should be able to call it?
     function createToken(string calldata name, string calldata symbol)
         external
     {
-        //check if exists needed??
-        WERC20 wrappedToken = new WERC20(name, symbol);
-        tokens[address(wrappedToken)] = wrappedToken;
-        //emit event
+        wERC20Factory.createToken(name, symbol);
     }
-
-    // function recoverSigner(
-    //     bytes32 hashedMessage,
-    //     uint8 v,
-    //     bytes32 r,
-    //     bytes32 s
-    // ) internal returns (address) {
-    //     bytes32 messageDigest = keccak256(
-    //         abi.encodePacked(
-    //             "\\x19Ethereum Signed Message:\\n32",
-    //             hashedMessage
-    //         )
-    //     );
-    //     return ecrecover(messageDigest, v, r, s);
-    // }
 }
