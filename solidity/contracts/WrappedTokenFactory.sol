@@ -4,18 +4,17 @@ pragma solidity 0.8.17;
 import "./ERC20Token.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-//Registry to keep track of eixsting and created tokens???
 contract WrappedTokenFactory is Ownable {
     mapping(address => ERC20Token) private _wrappedTokenContracts;
 
-    event TokenCreated(string name, string symbol, address tokenAddress); //indexed?
+    event TokenCreated(string name, string symbol, address tokenAddress);
 
-    function createToken(string calldata name, string calldata symbol)
-        external
-        onlyOwner
-    {
-        //check if exists needed??
-        ERC20Token wrappedToken = new ERC20Token(name, symbol);
+    function createToken(
+        string calldata name,
+        string calldata symbol,
+        address owner
+    ) external onlyOwner returns (ERC20Token wrappedToken) {
+        wrappedToken = new ERC20Token(name, symbol, owner);
         _wrappedTokenContracts[address(wrappedToken)] = wrappedToken;
         emit TokenCreated(name, symbol, address(wrappedToken));
     }

@@ -13,35 +13,40 @@ contract Bridge is Ownable {
         Lock,
         Release
     }
-    //add chain id?
-    event Transfer(address from, address to, uint amount, Step indexed step);
+
+    event Transfer(
+        address indexed from,
+        address to,
+        uint16 targetChainId,
+        uint256 amount,
+        Step indexed step
+    );
 
     constructor(address _wrappedTokenFactory) {
         wrappedTokenFactory = WrappedTokenFactory(_wrappedTokenFactory);
     }
 
     function lock(
-        //uint256 targetChainId,
-        address token, //payable??
+        address token,
+        uint16 targetChainId,
         uint256 amount
     ) external {
         require(amount > 0, "lock amount < 1");
 
         ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
-        emit Transfer(msg.sender, token, amount, Step.Lock);
+        emit Transfer(msg.sender, token, targetChainId, amount, Step.Lock);
     }
 
-    //the front end will hash the message and split it
     function lockWithPermit(
-        //uint256 targetChainId,
-        address token, //payable?
+        address token,
+        uint16 targetChainId,
         uint256 amount,
         uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) public payable {
+    ) external {
         require(amount > 0, "lock amount < 1");
 
         ERC20Token(token).permit(
@@ -56,27 +61,32 @@ contract Bridge is Ownable {
 
         ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
-        emit Transfer(msg.sender, token, amount, Step.Lock);
+        emit Transfer(msg.sender, token, targetChainId, amount, Step.Lock);
     }
 
     function release(
         address token,
-        //address receiver,
+        string calldata tokenName,
+        string calldata tokenSymbol,
+        uint16 targetChainId,
+        address receiver,
         uint amount
     ) external {
-        //check allowance?
-        //transfer to receiver?
-        ERC20Token(token).transfer(msg.sender, amount);
+        //how to check if signature is correct
 
-        emit Transfer(msg.sender, token, amount, Step.Release);
-    }
+        ERC20Token wrappedToken = wrappedTokenFactory.getToken(token);
+        if (address(wrappedToken) == address(0)) {
+            ERC20Token newWrappedToken = wrappedTokenFactory.createToken(
+                tokenName,
+                tokenSymbol,
+                address(this)
+            );
 
-    //mint and burn transactions
+            newWrappedToken.mint(receiver, amount);
+        } else {
+            ERC20Token(token).mint(receiver, amount);
+        }
 
-    //when are we using this function and who should be able to call it?
-    function createToken(string calldata name, string calldata symbol)
-        external
-    {
-        wrappedTokenFactory.createToken(name, symbol);
+        emit Transfer(msg.sender, token, targetChainId, amount, Step.Release);
     }
 }

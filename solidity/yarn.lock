@@ -1545,6 +1545,11 @@
     "table-layout" "^1.0.2"
     "typical" "^5.2.0"
 
+"commander@^8.1.0":
+  "integrity" "sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww=="
+  "resolved" "https://registry.npmjs.org/commander/-/commander-8.3.0.tgz"
+  "version" "8.3.0"
+
 "commander@3.0.2":
   "integrity" "sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow=="
   "resolved" "https://registry.npmjs.org/commander/-/commander-3.0.2.tgz"
@@ -1727,6 +1732,11 @@
   "version" "3.0.1"
   dependencies:
     "path-type" "^4.0.0"
+
+"dotenv@^16.0.3":
+  "integrity" "sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ=="
+  "resolved" "https://registry.npmjs.org/dotenv/-/dotenv-16.0.3.tgz"
+  "version" "16.0.3"
 
 "ecc-jsbn@~0.1.1":
   "integrity" "sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw=="
@@ -3984,6 +3994,19 @@
     "ansi-styles" "^4.0.0"
     "astral-regex" "^2.0.0"
     "is-fullwidth-code-point" "^3.0.0"
+
+"solc@^0.8.17":
+  "integrity" "sha512-Dtidk2XtTTmkB3IKdyeg6wLYopJnBVxdoykN8oP8VY3PQjN16BScYoUJTXFm2OP7P0hXNAqWiJNmmfuELtLf8g=="
+  "resolved" "https://registry.npmjs.org/solc/-/solc-0.8.17.tgz"
+  "version" "0.8.17"
+  dependencies:
+    "command-exists" "^1.2.8"
+    "commander" "^8.1.0"
+    "follow-redirects" "^1.12.1"
+    "js-sha3" "0.8.0"
+    "memorystream" "^0.3.1"
+    "semver" "^5.5.0"
+    "tmp" "0.0.33"
 
 "solc@0.7.3":
   "integrity" "sha512-GAsWNAjGzIDg7VxzP6mPjdurby3IkGCjQcM8GFYZT6RyaoUZKmMU6Y7YwG+tFGhv7dwZ8rmR4iwFDrrD99JwqA=="
