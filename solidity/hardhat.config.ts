@@ -1,10 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-etherscan";
+import "hardhat-deploy";
 import dotenv from "dotenv";
-import "./tasks/deploy-testnets";
-import "./tasks/deploy-mainnet";
-import "./tasks/printInfo.subtask";
 
 dotenv.config();
 const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL;
@@ -17,6 +14,9 @@ const config: HardhatUserConfig = {
     settings: { optimizer: { enabled: true, runs: 200 } },
   },
   networks: {
+    hardhat: {
+      chainId: 31337,
+    },
     goerli: {
       url: GOERLI_RPC_URL,
       accounts: [GOERLI_PRIVATE_KEY],
@@ -25,6 +25,14 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY,
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+    },
+    user: {
+      default: 1,
+    },
   },
 };
 
