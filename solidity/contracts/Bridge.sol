@@ -8,18 +8,22 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Bridge is Ownable {
     WrappedTokenFactory public wrappedTokenFactory;
+    uint256 public nonce;
+    mapping(uint256 => bool) public processedNonces;
 
-    enum Step {
-        Lock,
-        Release
-    }
-
-    event Transfer(
+    event Lock(
         address indexed from,
-        address to,
+        address token,
         uint16 targetChainId,
         uint256 amount,
-        Step indexed step
+        uint256 nonce
+    );
+
+    event Release(
+        address indexed receiver,
+        address token,
+        uint256 amount,
+        uint256 nonce
     );
 
     constructor(address _wrappedTokenFactory) {
@@ -35,7 +39,8 @@ contract Bridge is Ownable {
 
         ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
-        emit Transfer(msg.sender, token, targetChainId, amount, Step.Lock);
+        emit Lock(msg.sender, token, targetChainId, amount, nonce);
+        nonce++;
     }
 
     function lockWithPermit(
@@ -61,18 +66,24 @@ contract Bridge is Ownable {
 
         ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
-        emit Transfer(msg.sender, token, targetChainId, amount, Step.Lock);
+        emit Lock(msg.sender, token, targetChainId, amount, nonce);
+        nonce++;
     }
 
     function release(
+        address receiver,
         address token,
         string calldata tokenName,
         string calldata tokenSymbol,
-        uint16 targetChainId,
-        address receiver,
-        uint amount
+        uint256 amount,
+        uint256 otherChainNonce
     ) external {
         //how to check if signature is correct
+        require(
+            processedNonces[otherChainNonce] == false,
+            "transfer already processed"
+        );
+        processedNonces[otherChainNonce] = true;
 
         ERC20Token wrappedToken = wrappedTokenFactory.getToken(token);
         if (address(wrappedToken) == address(0)) {
@@ -87,6 +98,6 @@ contract Bridge is Ownable {
             ERC20Token(token).mint(receiver, amount);
         }
 
-        emit Transfer(msg.sender, token, targetChainId, amount, Step.Release);
+        emit Release(receiver, token, amount, otherChainNonce);
     }
 }

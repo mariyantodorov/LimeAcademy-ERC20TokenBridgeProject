@@ -26,21 +26,21 @@ const bridgeBsc = new web3Bsc.eth.Contract(
 );
 bridges[bscChainId] = bridgeBsc;
 
-bridgeEth.events.Transfer(
+bridgeEth.events.Lock(
   {fromBlock: 0, step: 0}
 )
-.on('data', async event => handleTransferEvent(event));
+.on('data', async event => handleLockEvent(event));
 
 bridgeBsc.events.Transfer(
     {fromBlock: 0, step: 0}
   )
-  .on('data', async event => handleTransferEvent(event));
+  .on('data', async event => handleLockEvent(event));
 
-const handleTransferEvent = async(transferEvent) => {
-    //, date, nonce
-    const { from, to, targetChainId, amount } = transferEvent.returnValues;
+const handleLockEvent = async(lockEvent) => {
+    //date?
+    const { from, to, targetChainId, amount, nonce } = lockEvent.returnValues;
     
-    const tx = bridges[targetChainId].methods.mint(to, amount); //nounce
+    const tx = bridges[targetChainId].methods.mint(to, amount, nonce);
     const [gasPrice, gasCost] = await Promise.all([
       providers[targetChainId].eth.getGasPrice(),
       tx.estimateGas({from: admin}),
