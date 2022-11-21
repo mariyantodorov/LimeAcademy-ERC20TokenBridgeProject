@@ -15,13 +15,13 @@ const adminPrivKey = '8b81e9caa6bf9213794c34c4a12b2fe85996a94bd4e0845659ba7325dd
 const { address: admin } = web3Bsc.eth.accounts.wallet.add(adminPrivKey);
 
 const bridgeEth = new web3Eth.eth.Contract(
-  BridgeEth.abi,
+  bridge.abi,
   BridgeEth.networks[sepoliaChainId].address
 );
 bridges[sepoliaChainId] = bridgeEth;
 
 const bridgeBsc = new web3Bsc.eth.Contract(
-  BridgeBsc.abi,
+  bridge.abi,
   BridgeBsc.networks[bscChainId].address
 );
 bridges[bscChainId] = bridgeBsc;
@@ -40,6 +40,7 @@ const handleLockEvent = async(lockEvent) => {
     //date?
     const { from, to, targetChainId, amount, nonce } = lockEvent.returnValues;
     
+    //call bridgeB if from can claim 
     const tx = bridges[targetChainId].methods.mint(to, amount, nonce);
     const [gasPrice, gasCost] = await Promise.all([
       providers[targetChainId].eth.getGasPrice(),
