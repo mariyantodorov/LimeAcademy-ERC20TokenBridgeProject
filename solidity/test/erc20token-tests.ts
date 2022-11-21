@@ -8,11 +8,7 @@ describe("ERC20Token", function () {
         const [owner, user] = await ethers.getSigners()
 
         const ERC20Token = await ethers.getContractFactory("ERC20Token")
-        const erc20token = await ERC20Token.deploy([
-            "Test",
-            "tst",
-            owner.address,
-        ])
+        const erc20token = await ERC20Token.deploy("Test", "tst", owner.address)
 
         return { owner, user, erc20token }
     }
