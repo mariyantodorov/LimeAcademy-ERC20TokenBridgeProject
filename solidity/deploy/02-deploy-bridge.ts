@@ -1,4 +1,8 @@
-module.exports = async ({getNamedAccounts, deployments}) => {
+import { HardhatRuntimeEnvironment } from "hardhat/types"
+
+const deployBridge = async function (hre: HardhatRuntimeEnvironment) {
+    // @ts-ignore
+    const { getNamedAccounts, deployments } = hre
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
 
@@ -6,11 +10,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
     const bridge = await deploy("Bridge", {
         from: deployer,
-        args:[wrappedTokenFactory.address],
+        args: [wrappedTokenFactory.address],
         log: true,
     })
 
     log("-----------------------------------")
 }
 
-module.exports.tags = ["all", "bridge"]
+export default deployBridge
+deployBridge.tags = ["all", "bridge"]

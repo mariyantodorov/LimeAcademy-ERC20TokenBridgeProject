@@ -9,12 +9,12 @@ contract WrappedTokenFactory is Ownable {
 
     event TokenCreated(string name, string symbol, address tokenAddress);
 
-    function createToken(
-        string calldata name,
-        string calldata symbol,
-        address owner
-    ) external onlyOwner returns (ERC20Token wrappedToken) {
-        wrappedToken = new ERC20Token(name, symbol, owner);
+    function createToken(string calldata name, string calldata symbol)
+        external
+        onlyOwner
+        returns (ERC20Token wrappedToken)
+    {
+        wrappedToken = new ERC20Token(name, symbol, msg.sender);
         _wrappedTokenContracts[address(wrappedToken)] = wrappedToken;
         emit TokenCreated(name, symbol, address(wrappedToken));
     }
