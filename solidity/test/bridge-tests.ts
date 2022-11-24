@@ -79,7 +79,7 @@ describe("Bridge", function () {
                         signature.r,
                         signature.s
                     )
-                ).to.be.revertedWith("lock amount < 1")
+                ).to.be.revertedWith("amount < 1")
             })
 
             //Should lock token with permit

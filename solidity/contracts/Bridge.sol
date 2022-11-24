@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Bridge is Ownable {
-    address public validator;
+    address public relayer;
     WrappedTokenFactory public wrappedTokenFactory;
 
     mapping(uint256 => bool) public processedNonces;
@@ -24,7 +24,7 @@ contract Bridge is Ownable {
 
     constructor(address _wrappedTokenFactory) {
         wrappedTokenFactory = WrappedTokenFactory(_wrappedTokenFactory);
-        validator = msg.sender;
+        relayer = msg.sender;
     }
 
     function setWrappedTokenFactory(address newWrappedTokenFactory)
@@ -35,7 +35,7 @@ contract Bridge is Ownable {
     }
 
     function setValidator(address newValidator) external onlyOwner {
-        validator = newValidator;
+        relayer = newValidator;
     }
 
     //TODO: custom error
@@ -85,11 +85,24 @@ contract Bridge is Ownable {
 
     function setClaimable(
         address to,
-        address token,
+        address sourceToken,
+        string calldata sourceTokenName,
+        string calldata sourceTokenSymbol,
         uint256 amount
     ) external {
-        require(msg.sender == validator, "not validator");
+        require(msg.sender == relayer, "not relayer");
 
-        claimable[to][token] = amount;
+        address tokenAddress = wrappedTokenFactory.tokenRegistry(sourceToken);
+
+        if (tokenAddress == address(0)) {
+            ERC20Token wrappedToken = wrappedTokenFactory.createToken(
+                sourceTokenName,
+                sourceTokenSymbol
+            );
+            wrappedTokenFactory.register(sourceToken, address(wrappedToken));
+            tokenAddress = address(wrappedToken);
+        }
+
+        claimable[to][tokenAddress] = amount;
     }
 }

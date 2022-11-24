@@ -59,20 +59,20 @@ async function main() {
         (await tokenContract.balanceOf(bridgeContract.address)).toString()
     )
 
-    console.log("Sending release tx")
-    const tx = await bridgeContract
-        .connect(signer)
-        .release(tokenContract.address, amount)
-    await tx.wait()
+    // console.log("Sending release tx")
+    // const tx = await bridgeContract
+    //     .connect(signer)
+    //     .release(tokenContract.address, amount)
+    // await tx.wait()
 
-    console.log(
-        "User balance after release:",
-        (await tokenContract.balanceOf(user)).toString()
-    )
-    console.log(
-        "Bridge balance after release:",
-        (await tokenContract.balanceOf(bridgeContract.address)).toString()
-    )
+    // console.log(
+    //     "User balance after release:",
+    //     (await tokenContract.balanceOf(user)).toString()
+    // )
+    // console.log(
+    //     "Bridge balance after release:",
+    //     (await tokenContract.balanceOf(bridgeContract.address)).toString()
+    // )
 }
 
 main()

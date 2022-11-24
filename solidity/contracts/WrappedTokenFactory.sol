@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract WrappedTokenFactory is Ownable {
     mapping(address => ERC20Token) private _wrappedTokenContracts;
+    //sourceTokenAddress => currentTokenAddress
+    mapping(address => address) public tokenRegistry;
 
     event TokenCreated(string name, string symbol, address tokenAddress);
 
@@ -21,5 +23,13 @@ contract WrappedTokenFactory is Ownable {
 
     function getToken(address token) public view returns (ERC20Token) {
         return _wrappedTokenContracts[token];
+    }
+
+    function register(address sourceTokenAddress, address currentTokenAddress)
+        external
+        onlyOwner
+    {
+        tokenRegistry[sourceTokenAddress] = currentTokenAddress;
+        //event
     }
 }
