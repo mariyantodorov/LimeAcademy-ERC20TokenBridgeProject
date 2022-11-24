@@ -1,6 +1,5 @@
 import { JsonRpcProvider } from "@ethersproject/providers"
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers"
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs"
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 import { onAttemptToApprove } from "../scripts/approve"
@@ -36,6 +35,7 @@ describe("Bridge", function () {
         const provider: JsonRpcProvider = new JsonRpcProvider(
             "http://localhost:8545"
         )
+
         return {
             owner,
             user,
@@ -59,8 +59,8 @@ describe("Bridge", function () {
             it("Should not allow lock 0 amount", async () => {
                 const { bridge, user, erc20token, provider } =
                     await loadFixture(deployBridgeFixture)
-                const targetChainId: number = 1
-                const amount: number = 1
+                const targetChainId: number = 31337
+                const amount: number = 0
                 const signature = await onAttemptToApprove(
                     user.address,
                     bridge.address,
@@ -71,7 +71,7 @@ describe("Bridge", function () {
 
                 await expect(
                     bridge.lockWithPermit(
-                        erc20token,
+                        erc20token.address,
                         targetChainId,
                         amount,
                         signature.deadline,
@@ -79,7 +79,7 @@ describe("Bridge", function () {
                         signature.r,
                         signature.s
                     )
-                ).to.be.revertedWith("Bridged amount is required.")
+                ).to.be.revertedWith("lock amount < 1")
             })
 
             //Should lock token with permit
@@ -88,7 +88,7 @@ describe("Bridge", function () {
             it("Should not allow lock token with invalid permit", async () => {
                 const { bridge, user, erc20token, provider } =
                     await loadFixture(deployBridgeFixture)
-                const targetChainId: number = 1
+                const targetChainId: number = 31337
                 const amount: number = 1
                 const signature = await onAttemptToApprove(
                     user.address,
@@ -99,24 +99,26 @@ describe("Bridge", function () {
                 )
 
                 await expect(
-                    bridge.lockWithPermit(
-                        erc20token,
-                        targetChainId,
-                        amount * 2,
-                        signature.deadline,
-                        signature.v,
-                        signature.r,
-                        signature.s
-                    )
+                    bridge
+                        .connect(user)
+                        .lockWithPermit(
+                            erc20token.address,
+                            targetChainId,
+                            amount * 2,
+                            signature.deadline,
+                            signature.v,
+                            signature.r,
+                            signature.s
+                        )
                 ).to.be.revertedWith("ERC20Permit: invalid signature")
             })
 
             //emits event
             it("Should emit a Lock event", async function () {
-                const { bridge, user, erc20token, provider } =
+                const { bridge, owner, user, erc20token, provider } =
                     await loadFixture(deployBridgeFixture)
 
-                const targetChainId: number = 1
+                const targetChainId: number = 31337
                 const amount: number = 1
                 const signature = await onAttemptToApprove(
                     user.address,
@@ -126,16 +128,20 @@ describe("Bridge", function () {
                     amount
                 )
 
+                erc20token.connect(owner).mint(user.address, amount)
+
                 await expect(
-                    bridge.lockWithPermit(
-                        erc20token,
-                        targetChainId,
-                        amount,
-                        signature.deadline,
-                        signature.v,
-                        signature.r,
-                        signature.s
-                    )
+                    bridge
+                        .connect(user)
+                        .lockWithPermit(
+                            erc20token.address,
+                            targetChainId,
+                            amount,
+                            signature.deadline,
+                            signature.v,
+                            signature.r,
+                            signature.s
+                        )
                 )
                     .to.emit(bridge, "Lock")
                     .withArgs(

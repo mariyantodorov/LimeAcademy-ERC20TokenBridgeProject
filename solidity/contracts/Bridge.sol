@@ -67,6 +67,7 @@ contract Bridge is Ownable {
             s
         );
 
+        //if wrapped burn else transfer
         ERC20Token(token).transferFrom(msg.sender, address(this), amount);
 
         emit Lock(msg.sender, token, targetChainId, amount);
@@ -118,6 +119,7 @@ contract Bridge is Ownable {
         address token,
         uint256 amount
     ) external {
+        //does it have claimable
         ERC20Token wrappedTokenContract = wrappedTokenFactory.getToken(token);
         require(address(wrappedTokenContract) != address(0));
 
