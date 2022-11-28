@@ -24,11 +24,11 @@ describe("WrappedTokenFactory", function () {
             "TST"
         )
         const receipt = await createTokenTx.wait()
-        const address2 = receipt.events.filter(
+        const address = receipt.events.filter(
             (e: { event: string }) => e.event == "TokenCreated"
         )[0].args.tokenAddress
 
-        expect(await wrappedTokenFactory.getToken(address2)).to.be.properAddress
+        expect(await wrappedTokenFactory.getToken(address)).to.be.properAddress
     })
 
     it("Should not allow create", async () => {

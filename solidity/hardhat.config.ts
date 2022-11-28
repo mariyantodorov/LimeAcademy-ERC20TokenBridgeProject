@@ -24,7 +24,7 @@ const config: HardhatUserConfig = {
             url: "HTTP://127.0.0.1:7545",
             chainId: 1337,
         },
-        goerli: {
+        sepolia: {
             url: SEPOLIA_RPC_URL,
             accounts: [SEPOLIA_PRIVATE_KEY],
             chainId: 5,

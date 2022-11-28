@@ -5,6 +5,7 @@ import { ethers } from "hardhat"
 import { onAttemptToApprove } from "../scripts/approve"
 import { Contract, Wallet } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import ERC20TokenABi from "../artifacts/contracts/ERC20Token.sol/ERC20Token.json"
 
 describe("Bridge", function () {
     // We define a fixture to reuse the same setup in every test.
@@ -82,9 +83,89 @@ describe("Bridge", function () {
                 ).to.be.revertedWith("amount < 1")
             })
 
-            //Should lock token with permit
+            it("Should lock non-wrapped token with permit", async () => {
+                const { bridge, owner, user, erc20token, provider } =
+                    await loadFixture(deployBridgeFixture)
+                const targetChainId: number = 31337
+                const amount: number = 1
+                const signature = await onAttemptToApprove(
+                    user.address,
+                    bridge.address,
+                    erc20token,
+                    provider,
+                    amount
+                )
 
-            //Should not allow lock token with invalid permit
+                await erc20token.connect(owner).mint(user.address, amount)
+
+                await expect(
+                    bridge
+                        .connect(user)
+                        .lockWithPermit(
+                            erc20token.address,
+                            targetChainId,
+                            amount,
+                            signature.deadline,
+                            signature.v,
+                            signature.r,
+                            signature.s
+                        )
+                )
+                    .to.emit(erc20token, "Transfer")
+                    .withArgs(user.address, bridge.address, amount)
+            })
+
+            // it("Should lock wrapped token with permit", async () => {
+            //     const { bridge, owner, user, wrappedTokenFactory, provider } =
+            //         await loadFixture(deployBridgeFixture)
+            //     const targetChainId: number = 31337
+            //     const amount: number = 1
+            //     const createTokenTx = await wrappedTokenFactory
+            //         .connect(owner)
+            //         .createToken("Test2", "tst2")
+            //     const receipt = await createTokenTx.wait()
+            //     const wrappedtokenAddress = receipt.events.filter(
+            //         (e: { event: string }) => e.event == "TokenCreated"
+            //     )[0].args.tokenAddress
+
+            //     const wrappedtokenContract = new ethers.Contract(
+            //         wrappedtokenAddress,
+            //         ERC20TokenABi.abi,
+            //         provider
+            //     )
+            //     await wrappedtokenContract
+            //         .connect(owner)
+            //         .mint(user.address, amount)
+
+            //     const signature = await onAttemptToApprove(
+            //         user.address,
+            //         bridge.address,
+            //         wrappedtokenContract,
+            //         provider,
+            //         amount
+            //     )
+
+            //     await expect(
+            //         bridge
+            //             .connect(user)
+            //             .lockWithPermit(
+            //                 wrappedtokenContract.address,
+            //                 targetChainId,
+            //                 amount,
+            //                 signature.deadline,
+            //                 signature.v,
+            //                 signature.r,
+            //                 signature.s
+            //             )
+            //     )
+            //         .to.emit(wrappedtokenContract, "Transfer")
+            //         .withArgs(
+            //             user.address,
+            //             "0x0000000000000000000000000000000000000000",
+            //             amount
+            //         )
+            // })
+
             it("Should not allow lock token with invalid permit", async () => {
                 const { bridge, user, erc20token, provider } =
                     await loadFixture(deployBridgeFixture)
@@ -113,7 +194,6 @@ describe("Bridge", function () {
                 ).to.be.revertedWith("ERC20Permit: invalid signature")
             })
 
-            //emits event
             it("Should emit a Lock event", async function () {
                 const { bridge, owner, user, erc20token, provider } =
                     await loadFixture(deployBridgeFixture)
@@ -153,10 +233,6 @@ describe("Bridge", function () {
             })
         })
 
-        describe("BurnWithPermit", function () {})
-
         describe("Release", function () {})
-
-        describe("Mint", function () {})
     })
 })

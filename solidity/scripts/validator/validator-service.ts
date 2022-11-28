@@ -1,57 +1,85 @@
+import { ethers } from "ethers"
+import { Contract } from "@ethersproject/contracts"
 import Bridge from "../../artifacts/contracts/Bridge.sol/Bridge.json"
 import ERC20 from "../../artifacts/contracts/ERC20Token.sol/ERC20Token.json"
 
-const Web3 = require("web3")
-let bridges = new Map<number, any>()
+let bridges = new Map<number, Contract>()
 let providers = new Map<number, any>()
 const chainIdA = 31337 //11155111 //sepolia
 const chainIdB = 1337 //97 //Bsc
 const adminPrivKey =
-    "8b81e9caa6bf9213794c34c4a12b2fe85996a94bd4e0845659ba7325ddd3cdfc"
+    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 const bridgeContractAddressChainA = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-const bridgeContractAddressChainB = "0xfA2f40104aBb08E89B762FDac5a16D03372b14c3"
+const bridgeContractAddressChainB = "0x200451aDaC07e80ff008151c67B894CA71580F61"
 
-const providerChainA = new Web3("http://127.0.0.1:8545/")
+//"http://127.0.0.1:8545/"
+const providerChainA = new ethers.providers.JsonRpcProvider()
 providers.set(chainIdA, providerChainA)
 
-const providerChainB = new Web3("HTTP://127.0.0.1:7545")
+const providerChainB = new ethers.providers.JsonRpcProvider(
+    "HTTP://127.0.0.1:7545"
+)
 providers.set(chainIdB, providerChainB)
 
-const bridgeContractChainA = new providerChainA.eth.Contract(
+const bridgeContractChainA = new ethers.Contract(
+    bridgeContractAddressChainA,
     Bridge.abi,
-    bridgeContractAddressChainA
+    providerChainA
 )
 bridges.set(chainIdA, bridgeContractChainA)
 
-const bridgeContractChainB = new providerChainB.eth.Contract(
+const bridgeContractChainB = new ethers.Contract(
+    bridgeContractAddressChainB,
     Bridge.abi,
-    bridgeContractAddressChainB
+    providerChainB
 )
 bridges.set(chainIdB, bridgeContractChainB)
 
 async function main() {
-    console.log("start")
-    bridgeContractChainA.events
-        .Lock({ fromBlock: 0, step: 0 })
-        .on("data", async (event: any) => handleLockEvent(event))
-    console.log("end")
-    //providerChainA.on(bridgeContractChainA.filters.Lock(), handleLockEvent)
+    bridgeContractChainA.on(
+        "Lock",
+        async (
+            from: string,
+            tokenAddress: string,
+            targetChainId: number,
+            amount: number,
+            event: any
+        ) =>
+            handleLockEvent(
+                from,
+                tokenAddress,
+                targetChainId,
+                amount,
+                event,
+                providerChainA
+            )
+    )
 }
 
-const handleLockEvent = async (lockEvent: any) => {
-    //date?
-    const { from, tokenAddress, targetChainId, amount } = lockEvent.returnValues
+const handleLockEvent = async (
+    from: string,
+    tokenAddress: string,
+    targetChainId: number,
+    amount: number,
+    event: any,
+    provider: any
+) => {
+    const tokenContract = new ethers.Contract(tokenAddress, ERC20.abi, provider)
+    const tokenName = await tokenContract.name()
+    console.log(tokenName)
+    const tokenSymbol = await tokenContract.symbol()
+    console.log(tokenSymbol)
 
-    const tokenContract = new Web3.eth.Contract(ERC20.abi, tokenAddress)
-    const tokenName = await tokenContract.methods.name().call()
-    const tokenSymbol = await tokenContract.methods.symbol().call()
     //call bridgeB if from can claim
     const targetBridgeContract = bridges.get(targetChainId)
-    const tx = await targetBridgeContract?.methods.setClaimable(
-        from,
-        tokenAddress,
-        amount
+    const targetBridgeProvider = providers.get(targetChainId)
+    const validatorWallet = new ethers.Wallet(
+        "d4b0ee08ee826281a3ce2ebd5db6ee73f519551efb83de268602e13a5eb4c9ad", //ganache account[0] private key
+        targetBridgeProvider
     )
+    const tx = await targetBridgeContract
+        ?.connect(validatorWallet) //target chain owner/relayer
+        .setClaimable(from, tokenAddress, tokenName, tokenSymbol, amount)
     const txReceipt = await tx.wait()
     // const [gasPrice, gasCost] = await Promise.all([
     //     providers[targetChainId].eth.getGasPrice(),
@@ -66,6 +94,7 @@ const handleLockEvent = async (lockEvent: any) => {
     //     gasPrice,
     // }
     // const receipt = await providers[targetChainId].eth.sendTransaction(txData)
+
     console.log(`Transaction hash: ${txReceipt.transactionHash}`)
     console.log(`
       Processed transfer:

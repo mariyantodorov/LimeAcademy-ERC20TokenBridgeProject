@@ -11,7 +11,7 @@ contract Bridge is Ownable {
     WrappedTokenFactory public wrappedTokenFactory;
 
     mapping(uint256 => bool) public processedNonces;
-    mapping(address => mapping(address => uint256)) claimable;
+    mapping(address => mapping(address => uint256)) public claimable;
 
     event Lock(
         address indexed from,

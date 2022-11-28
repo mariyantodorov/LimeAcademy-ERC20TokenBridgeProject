@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 
 const deployBridge = async function (hre: HardhatRuntimeEnvironment) {
     // @ts-ignore
-    const { getNamedAccounts, deployments } = hre
+    const { getNamedAccounts, deployments, ethers } = hre
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
 
@@ -12,7 +12,14 @@ const deployBridge = async function (hre: HardhatRuntimeEnvironment) {
         from: deployer,
         args: [wrappedTokenFactory.address],
         log: true,
+        //waitConfirmations:
     })
+
+    const wrappedTokenFactoryContract = await ethers.getContract(
+        "WrappedTokenFactory",
+        deployer
+    )
+    await wrappedTokenFactoryContract.transferOwnership(bridge.address)
 
     log("-----------------------------------")
 }
